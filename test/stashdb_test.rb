@@ -1,11 +1,11 @@
 # Pure minitest, no Gemfile: `ruby test/stashdb_test.rb` must pass with system
-# Ruby alone. stashdb.rb references ActiveSupport's blank?/present?/presence,
-# Time.current, Integer#hours/#ago, and ::Metadata::SearchTerm — those only really
-# exist inside the host XVault process (docs/scraper-plugin-authoring.md,
-# "Connector escape hatch"). Here we hand-roll just enough of each to drive the
-# plugin's pure logic without a network call or a Rails boot. Scene/VideoFile
-# stand-ins are plain classes (no ActiveRecord) — resolve only ever touches the
-# handful of attributes below.
+# Ruby alone. stashdb.rb references ActiveSupport's blank?/present?/presence and
+# ::Metadata::SearchTerm — those only really exist inside the host XVault process
+# (docs/scraper-plugin-authoring.md, "Connector escape hatch"). Here we hand-roll
+# just enough of each to drive the plugin's pure logic without a network call or
+# a Rails boot. Scene/VideoFile stand-ins are plain classes (no ActiveRecord) —
+# resolve/fingerprint_match only ever touch the handful of attributes below. The
+# resolve throttle itself now lives in the host (core), not here.
 require "minitest/autorun"
 require "json"
 require "uri"
@@ -15,18 +15,6 @@ class Object
   def blank? = respond_to?(:empty?) ? !!empty? : !self
   def present? = !blank?
   def presence = present? ? self : nil
-end
-
-class Time
-  def self.current = now
-end
-
-class Numeric
-  def hours = self * 3600
-end
-
-class Integer
-  def ago = Time.now - self
 end
 
 module Metadata
@@ -103,6 +91,40 @@ class StashdbTest < Minitest::Test
     assert_respond_to STASHDB, :resolve
   end
 
+  # --- fingerprint_match: pure lookup, no throttle, no stamp ---
+
+  def test_fingerprint_match_maps_a_hit_and_stamps_source_key_when_duration_agrees
+    vf = make_video_file(duration: 1802)
+    data = stub_client_query(FIXTURE_DATA) { STASHDB.fingerprint_match(vf, "k") }
+
+    assert_equal "Test Scene Title", data[:title]
+    assert_equal "scene-uuid-0001", data[:source_id]
+    assert_equal [ "Tag One", "Tag Two" ], data[:tag_names]
+    assert_equal [ "Jane Canonical", "Kate Noparent" ], data[:performer_names]
+    assert_equal [
+      { name: "Jane Canonical", source_id: "perf-canonical-1" },
+      { name: "Kate Noparent", source_id: "perf-noparent-2" }
+    ], data[:performers]
+    assert_equal "stashdb", data[:source_key]
+  end
+
+  def test_fingerprint_match_rejects_a_hit_when_duration_disagrees_beyond_tolerance
+    vf = make_video_file(duration: 1600)
+    assert_equal({}, stub_client_query(FIXTURE_DATA) { STASHDB.fingerprint_match(vf, "k") })
+  end
+
+  def test_fingerprint_match_returns_empty_hash_without_a_credential
+    vf = make_video_file
+    assert_equal({}, stub_client_query(FIXTURE_DATA) { STASHDB.fingerprint_match(vf, nil) })
+  end
+
+  def test_fingerprint_match_never_stamps_or_otherwise_touches_the_scene
+    vf = make_video_file(duration: 1802)
+    stub_client_query(FIXTURE_DATA) { STASHDB.fingerprint_match(vf, "k") }
+
+    assert_nil vf.scene.resolve_last_attempt_at
+  end
+
   # --- resolve: fingerprint hit, using the ported fixture ---
 
   def test_resolve_maps_a_fingerprint_hit_and_stamps_source_key_when_duration_agrees
@@ -118,6 +140,7 @@ class StashdbTest < Minitest::Test
       { name: "Kate Noparent", source_id: "perf-noparent-2" }
     ], data[:performers]
     assert_equal "stashdb", data[:source_key]
+    assert_nil vf.scene.resolve_last_attempt_at
   end
 
   def test_resolve_rejects_a_fingerprint_hit_when_duration_disagrees_beyond_tolerance
@@ -128,24 +151,6 @@ class StashdbTest < Minitest::Test
   def test_resolve_returns_empty_hash_without_a_credential
     vf = make_video_file
     assert_equal({}, stub_client_query(FIXTURE_DATA) { STASHDB.resolve(vf, nil) })
-  end
-
-  # --- throttle window ---
-
-  def test_resolve_throttle_skips_a_recent_miss_with_no_source_id
-    vf = make_video_file(source_id: nil, resolve_last_attempt_at: Time.now - 3600)
-    assert_equal({}, stub_client_query(FIXTURE_DATA) { STASHDB.resolve(vf, "k") })
-  end
-
-  def test_resolve_throttle_lifts_after_24h_once_resolved_or_on_first_attempt
-    lifted_after_24h = make_video_file(source_id: nil, resolve_last_attempt_at: Time.now - (25 * 3600))
-    already_resolved = make_video_file(source_id: "already", resolve_last_attempt_at: Time.now - 3600)
-    first_attempt = make_video_file(source_id: nil, resolve_last_attempt_at: nil)
-
-    [ lifted_after_24h, already_resolved, first_attempt ].each do |vf|
-      data = stub_client_query(FIXTURE_DATA) { STASHDB.resolve(vf, "k") }
-      assert_equal "scene-uuid-0001", data[:source_id]
-    end
   end
 
   # --- search: Identify panel, self-stamps source_key (host does not) ---

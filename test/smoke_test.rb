@@ -15,7 +15,7 @@ CAPABILITIES = %w[resolver web_search scrape fingerprint performer].freeze
 
 REQUIRED_ARITY = { available?: 1, capabilities: 0, search: 2, fetch: 2 }.freeze
 OPTIONAL_ARITY = {
-  resolve: 2, web_search_provider: 0, search_performers: 2, fetch_performer: 2,
+  resolve: 2, fingerprint_match: 2, web_search_provider: 0, search_performers: 2, fetch_performer: 2,
   fetch_performer_aliases: 2, fetch_performer_posters: 2, find_performer_id: 2, trusted_hosts: 0
 }.freeze
 

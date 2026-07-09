@@ -6,20 +6,22 @@ require "json"
 # ThePornDB (theporndb.net) connector — merges the former core Metadata::Tpdb
 # resolver with Connectors::Tpdb's plugin-interface shim into one plugin
 # object, per the `connector:` escape hatch (xvault docs/scraper-plugin-authoring.md).
-# Two resolve strategies, tried in order:
-#   (a) PHASH fingerprint lookup — XVault's Library::Phash is bit-compatible with
-#       TPDB's, so a scene whose stored PHASH matches is a near-exact hit; confirmed
-#       with a duration agreement (±5s) to guard against hash collisions.
+# #fingerprint_match is the pure PHASH lookup (XVault's Library::Phash is bit-compatible
+# with TPDB's, so a matching stored PHASH is a near-exact hit; confirmed with a duration
+# agreement ±5s to guard against hash collisions) — the host calls it directly for
+# auto-resolve and owns the per-scene resolve throttle. #resolve wraps it with two more
+# fallback strategies for the Identify panel's manual retry, tried in order:
+#   (a) fingerprint_match
 #   (b) URL verify — when the scene's page URL is already known, parse-search TPDB
 #       and keep the candidate whose own url matches ours (host+path).
-# #resolve never raises and returns {} on any failure, missing credential, throttle,
-# or no match. See docs/tpdb-api.md for the (unofficial) API surface.
+#   (c) free-text parse-search on the cleaned title, as a last resort.
+# Neither method ever raises; both return {} on any failure, missing credential, or no
+# match. See docs/tpdb-api.md for the (unofficial) API surface.
 #
 # Ported ~verbatim from XVault core's former Metadata::Tpdb + Connectors::Tpdb
 # (#40 plugin extraction). This file is `instance_eval`'d inside the host XVault
-# process, so referencing ActiveSupport's blank?/present? and Time.current is
-# safe — they're already loaded in the same process, not a dependency this file
-# ships.
+# process, so referencing ActiveSupport's blank?/present? is safe — it's already
+# loaded in the same process, not a dependency this file ships.
 class Tpdb
   BASE = "https://api.theporndb.net".freeze
   DURATION_TOLERANCE = 5 # seconds; ponytail: the disambiguation knob, widen if hits are missed
@@ -74,22 +76,37 @@ class Tpdb
     def capabilities = %w[resolver fingerprint performer]
     def trusted_hosts = %w[theporndb.net]
 
-    # Auto-resolve entry (FINGERPRINT capability). Self-stamps source_key since
-    # ResolveJob's automatic multi-source merge has no per-source bookkeeping of
-    # its own (unlike Identify's Apply path, which merges source_key explicitly
-    # from the picked connector).
+    # Pure fingerprint lookup (FINGERPRINT capability) — the host calls this directly
+    # for auto-resolve and owns the throttle/stamp itself, so this method has no side
+    # effects and is safe to call repeatedly. Self-stamps source_key since ResolveJob's
+    # automatic multi-source merge has no per-source bookkeeping of its own (unlike
+    # Identify's Apply path, which merges source_key explicitly from the picked connector).
+    def fingerprint_match(video_file, credential)
+      return {} if credential.blank?
+      return {} if video_file.phash.blank?
+
+      client = Client.new(credential)
+      body = client.get("/scenes?hash=#{CGI.escape(video_file.phash)}&hashType=PHASH")
+      return {} unless body
+
+      candidate = results(body).find { |s| duration_agrees?(s, video_file.duration) }
+      candidate ? map_scene(candidate).merge(source_key: "tpdb") : {}
+    rescue StandardError
+      {}
+    end
+
+    # Manual resolve entry for the Identify panel's retry action: tries the pure
+    # fingerprint match first, then falls back to URL verify and free-text parse-search.
     def resolve(video_file, credential)
       return {} if credential.blank?
 
-      scene = video_file.scene
-      return {} if throttled?(scene)
-
-      scene.update_column(:resolve_last_attempt_at, Time.current)
-
-      client = Client.new(credential)
-      data = by_phash(video_file, client)
-      data = by_url(scene, client) if data.empty?
-      data = by_parse_search(scene, video_file, client) if data.empty?
+      data = fingerprint_match(video_file, credential)
+      if data.empty?
+        scene = video_file.scene
+        client = Client.new(credential)
+        data = by_url(scene, client)
+        data = by_parse_search(scene, video_file, client) if data.empty?
+      end
       data.present? ? data.merge(source_key: "tpdb") : data
     rescue StandardError
       {}
@@ -210,22 +227,6 @@ class Tpdb
     end
 
     private
-
-    def throttled?(scene)
-      scene.source_id.nil? &&
-        scene.resolve_last_attempt_at.present? &&
-        scene.resolve_last_attempt_at > 24.hours.ago
-    end
-
-    def by_phash(video_file, client)
-      return {} if video_file.phash.blank?
-
-      body = client.get("/scenes?hash=#{CGI.escape(video_file.phash)}&hashType=PHASH")
-      return {} unless body
-
-      candidate = results(body).find { |s| duration_agrees?(s, video_file.duration) }
-      candidate ? map_scene(candidate) : {}
-    end
 
     def by_url(scene, client)
       return {} if scene.webpage_url.blank?

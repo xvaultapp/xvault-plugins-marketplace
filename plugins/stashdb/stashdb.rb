@@ -5,21 +5,23 @@ require "json"
 # StashDB (stashdb.org) connector — a clean-room consumer of the public stash-box
 # GraphQL API (no stash/stash-box source referenced or copied; queries below are
 # written from scratch against the documented schema, see docs/stashdb-api.md).
-# Two resolve strategies, tried in order:
-#   (a) fingerprint match — XVault's OSHASH/PHASH sent as a batch to
-#       findScenesBySceneFingerprints; confirmed with a duration agreement (±5s)
-#       against either the candidate's own duration or any of its fingerprint
-#       durations, to guard against hash collisions.
+# #fingerprint_match is the pure fingerprint lookup — XVault's OSHASH/PHASH sent as a
+# batch to findScenesBySceneFingerprints, confirmed with a duration agreement (±5s)
+# against either the candidate's own duration or any of its fingerprint durations, to
+# guard against hash collisions. The host calls it directly for auto-resolve and owns
+# the per-scene resolve throttle. #resolve wraps it with one more fallback for the
+# Identify panel's manual retry:
+#   (a) fingerprint_match
 #   (b) free-text search — cleaned-title fallback, mirroring TPDB's parse-search
-#       strategy, tried only when fingerprint match comes up empty.
+#       strategy, tried only when fingerprint_match comes up empty.
 # No by_url strategy: StashDB's scene `urls` point at studio pages, not tube
 # pages, so there's nothing to verify our scene's webpage_url against.
-# #resolve never raises and returns {} on any failure, missing credential, throttle,
-# or no match. See docs/stashdb-api.md for the (verified live) API surface.
+# Neither method ever raises; both return {} on any failure, missing credential, or no
+# match. See docs/stashdb-api.md for the (verified live) API surface.
 #
 # This file is `instance_eval`'d inside the host XVault process, so referencing
-# ActiveSupport's blank?/present?/presence and Time.current/Integer#hours/#ago is
-# safe — they're already loaded in the same process, not a dependency this file ships.
+# ActiveSupport's blank?/present?/presence is safe — it's already loaded in the
+# same process, not a dependency this file ships.
 class Stashdb
   BASE = "https://stashdb.org/graphql".freeze
   DURATION_TOLERANCE = 5 # seconds; ponytail: the disambiguation knob, widen if hits are missed
@@ -135,21 +137,43 @@ class Stashdb
     # from another CDN host.
     def trusted_hosts = %w[stashdb.org cdn.stashdb.org]
 
-    # Auto-resolve entry (FINGERPRINT capability). Self-stamps source_key since
-    # ResolveJob's automatic multi-source merge has no per-source bookkeeping of
-    # its own (unlike Identify's Apply path, which merges source_key explicitly
-    # from the picked connector).
+    # Pure fingerprint lookup (FINGERPRINT capability) — the host calls this directly
+    # for auto-resolve and owns the throttle/stamp itself, so this method has no side
+    # effects and is safe to call repeatedly. Self-stamps source_key since ResolveJob's
+    # automatic multi-source merge has no per-source bookkeeping of its own (unlike
+    # Identify's Apply path, which merges source_key explicitly from the picked connector).
+    def fingerprint_match(video_file, credential)
+      return {} if credential.blank?
+
+      # Skip a hash type XVault doesn't have (a nil oshash or phash).
+      fingerprints = []
+      fingerprints << { hash: video_file.oshash, algorithm: "OSHASH" } if video_file.oshash.present?
+      fingerprints << { hash: video_file.phash, algorithm: "PHASH" } if video_file.phash.present?
+      return {} if fingerprints.empty?
+
+      # Batch fingerprint match — one file, so one inner list; the result is
+      # index-aligned to the input outer list, so result[0] is our candidates.
+      client = Client.new(credential)
+      data = client.query(FIND_BY_FINGERPRINTS_QUERY, fingerprints: [ fingerprints ])
+      return {} unless data
+
+      candidates = Array(data["findScenesBySceneFingerprints"]).first
+      candidate = Array(candidates).find { |s| duration_agrees?(s, video_file.duration) }
+      candidate ? map_scene(candidate).merge(source_key: "stashdb") : {}
+    rescue StandardError
+      {}
+    end
+
+    # Manual resolve entry for the Identify panel's retry action: tries the pure
+    # fingerprint match first, then falls back to free-text search.
     def resolve(video_file, credential)
       return {} if credential.blank?
 
-      scene = video_file.scene
-      return {} if throttled?(scene)
-
-      scene.update_column(:resolve_last_attempt_at, Time.current)
-
-      client = Client.new(credential)
-      data = by_fingerprint(video_file, client)
-      data = by_search(scene, video_file, client) if data.empty?
+      data = fingerprint_match(video_file, credential)
+      if data.empty?
+        client = Client.new(credential)
+        data = by_search(video_file.scene, video_file, client)
+      end
       data.present? ? data.merge(source_key: "stashdb") : data
     rescue StandardError
       {}
@@ -265,29 +289,6 @@ class Stashdb
     end
 
     private
-
-    def throttled?(scene)
-      scene.source_id.nil? &&
-        scene.resolve_last_attempt_at.present? &&
-        scene.resolve_last_attempt_at > 24.hours.ago
-    end
-
-    # Batch fingerprint match — one file, so one inner list; the result is
-    # index-aligned to the input outer list, so result[0] is our candidates.
-    # Skip a hash type XVault doesn't have (a nil oshash or phash).
-    def by_fingerprint(video_file, client)
-      fingerprints = []
-      fingerprints << { hash: video_file.oshash, algorithm: "OSHASH" } if video_file.oshash.present?
-      fingerprints << { hash: video_file.phash, algorithm: "PHASH" } if video_file.phash.present?
-      return {} if fingerprints.empty?
-
-      data = client.query(FIND_BY_FINGERPRINTS_QUERY, fingerprints: [ fingerprints ])
-      return {} unless data
-
-      candidates = Array(data["findScenesBySceneFingerprints"]).first
-      candidate = Array(candidates).find { |s| duration_agrees?(s, video_file.duration) }
-      candidate ? map_scene(candidate) : {}
-    end
 
     # Last-resort fallback for files with no fingerprint hit: search StashDB with a
     # cleaned title/filename and accept a candidate ONLY under a strong guard —
