@@ -12,7 +12,7 @@
 # Thumbs in the search grid are lazy-loaded via data-src (the src attribute
 # is a shared blank placeholder gif).
 name: XVideos
-version: "1.0.0"
+version: "1.0.1"
 api_version: 1
 url_patterns:
   - 'xvideos\.com/video\.'
@@ -23,7 +23,7 @@ search:
   fields:
     title:       { selector: "p.title a", attribute: title }
     webpage_url: { selector: "p.title a", attribute: href }
-    image:       { selector: ".thumb img", attribute: data-src }
+    cover_url:   { selector: ".thumb img", attribute: data-src }
     # no duration: the grid renders it as "13 min", and the host's search
     # parse_duration only accepts MM:SS/H:MM:SS — so the field would always
     # come back nil (verified live against the real host). Omitted rather

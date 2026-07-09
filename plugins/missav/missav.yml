@@ -30,7 +30,7 @@
 # substring matches (`/actresses/`, `/genres/`, `/makers/`), but treat this as
 # best-effort. Search covers the first results page only (limit 12).
 name: MissAV
-version: "1.0.0"
+version: "1.0.1"
 api_version: 1
 # Cloudflare managed JS challenge: fetch every page through the host's JS/solver
 # path (FlareSolverr) instead of a plain GET. Hosts without a solver ignore this
@@ -48,7 +48,7 @@ search:
   fields:
     title:       { selector: "a.text-secondary" }
     webpage_url: { selector: "a.text-secondary", attribute: href }
-    image:       { selector: "img", attribute: data-src }
+    cover_url:   { selector: "img", attribute: data-src }
     duration:    { selector: "span.bottom-1.right-1" }   # H:MM:SS, e.g. "1:56:23"
 scene:
   title:      { selector: "meta[property='og:title']", type: css, attribute: content }

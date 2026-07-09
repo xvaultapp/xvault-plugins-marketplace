@@ -49,10 +49,11 @@ A bare top-level array (`[ { ... } ]`) is also accepted.
 ## Writing a plugin
 
 A plugin is one YAML file (plus an optional co-located `.rb` escape hatch). It
-can declare a `search:` block (joins XVault's Identify connectors, searchable by
-free-text term) and/or a `scene:` block (scrapes a matched `webpage_url`). See
-the plugins already in [`plugins/`](./plugins) for worked examples,
-and the full field reference in XVault's own
+can declare a `search:` block (free-text Identify **and** web recommendations —
+same toggle) and/or a `scene:` block (scrapes a matched `webpage_url`). Search
+thumb fields use `cover_url` (not `image` — that's for `scene:` only). See the
+plugins already in [`plugins/`](./plugins) for worked examples, and the full
+field reference in XVault's own
 [`docs/scraper-plugin-authoring.md`](https://github.com/xvaultapp/xvault/blob/main/docs/scraper-plugin-authoring.md).
 
 A plugin that references a `script:` file ships Ruby that XVault evaluates on

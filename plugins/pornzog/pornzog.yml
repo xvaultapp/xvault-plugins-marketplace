@@ -11,7 +11,7 @@
 # and models-list/tags-list anchors — scene fields below use those (type:
 # css) instead of json_ld.
 name: Pornzog
-version: "1.0.0"
+version: "1.0.1"
 api_version: 1
 url_patterns:
   - 'pornzog\.com/video/\d+/'
@@ -22,7 +22,7 @@ search:
   fields:
     title:       { selector: "a.title span" }
     webpage_url: { selector: "a.title", attribute: href }
-    image:       { selector: "img.thumb", attribute: data-original }
+    cover_url:   { selector: "img.thumb", attribute: data-original }
     duration:    { selector: "div.duration" }
 scene:
   title:       { selector: "h2.video-title", type: css }

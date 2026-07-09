@@ -40,7 +40,7 @@
 # above-the-fold thumbs skip lazyload and only carry a plain src, so a small
 # fraction of search results may come back with no image.
 name: NoodleMagazine
-version: "1.0.0"
+version: "1.0.1"
 api_version: 1
 url_patterns:
   - 'noodlemagazine\.com/watch/'
@@ -56,7 +56,7 @@ search:
   fields:
     title:       { selector: ".i_info .title" }
     webpage_url: { selector: "a.item_link", attribute: href }
-    image:       { selector: ".i_img img", attribute: data-src }
+    cover_url:   { selector: ".i_img img", attribute: data-src }
     duration:    { selector: ".m_time" }
 scene:
   title:       { selector: "h1", type: css }

@@ -42,7 +42,7 @@
 # (JSON API or headless browser) would be the upgrade path if fuller, titled
 # results are needed.
 name: xHamster
-version: "1.0.0"
+version: "1.0.1"
 api_version: 1
 url_patterns:
   - 'xhamster\.com/videos/'
@@ -53,7 +53,7 @@ search:
   fields:
     title:       { selector: "a.video-thumb-info__name", attribute: title }
     webpage_url: { selector: "a.video-thumb__image-container", attribute: href }
-    image:       { selector: "img.thumb-image-container__image", attribute: src }
+    cover_url:   { selector: "img.thumb-image-container__image", attribute: src }
     duration:    { selector: "[data-role='video-duration']" }
 scene:
   title:       { selector: "meta[property='og:title']", type: css, attribute: content }
