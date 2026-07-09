@@ -1,11 +1,6 @@
 {
   "plugins": [
     {
-      "name": "Example Tube",
-      "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/example-tube/example-tube.yml",
-      "description": "Template plugin — search + scene scrape for a placeholder site. Copy it to author your own."
-    },
-    {
       "name": "Eporner",
       "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/eporner/eporner.yml",
       "description": "Free-text search and web recommendations from eporner.com. No API key required.",

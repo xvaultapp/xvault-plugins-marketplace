@@ -31,9 +31,9 @@ the operator's own risk.
 {
   "plugins": [
     {
-      "name": "Example Tube",
-      "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/example-tube/example-tube.yml",
-      "description": "Search + scene scrape for example-tube.com"
+      "name": "Eporner",
+      "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/eporner/eporner.yml",
+      "description": "Free-text search and web recommendations from eporner.com. No API key required."
     }
   ]
 }
@@ -51,7 +51,7 @@ A bare top-level array (`[ { ... } ]`) is also accepted.
 A plugin is one YAML file (plus an optional co-located `.rb` escape hatch). It
 can declare a `search:` block (joins XVault's Identify connectors, searchable by
 free-text term) and/or a `scene:` block (scrapes a matched `webpage_url`). See
-[`plugins/example-tube/example-tube.yml`](./plugins/example-tube/example-tube.yml) for a worked example
+the plugins already in [`plugins/`](./plugins) for worked examples,
 and the full field reference in XVault's own
 [`docs/scraper-plugin-authoring.md`](https://github.com/xvaultapp/xvault/blob/main/docs/scraper-plugin-authoring.md).
 
