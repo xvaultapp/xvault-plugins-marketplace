@@ -12,3 +12,4 @@ jobs:
       - run: ruby test/eporner_test.rb
       - run: ruby test/tpdb_test.rb
       - run: ruby test/stashdb_test.rb
+      - run: ruby test/beeg_test.rb

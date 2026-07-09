@@ -1,0 +1,64 @@
+# xHamster — free-text search (Identify panel) + scene enrichment, no API key
+# required. Clean-room: selectors derived 2026-07-09 from live curl fetches of
+# https://xhamster.com/search/lesbian (results grid, desktop-Chrome UA — the
+# response `server: cloudflare` header is present but no JS/interstitial
+# challenge was observed; a second fetch with NO User-Agent at all also
+# returned the full 200 results page, so this is CDN-fronted, not actively
+# bot-gated, at least from this vantage point) and two video pages reached
+# from it: https://xhamster.com/videos/eva-vs-mel-xheuyeJ (amateur upload)
+# and https://xhamster.com/videos/lesbian-boss-seducing-her-hot-maid-8891727
+# (studio-published, to confirm the studio/performer selectors).
+#
+# The video page carries NO schema.org JSON-LD VideoObject block at all —
+# only Open Graph meta tags (og:title/og:image) and a plain <meta
+# name="description">, so scene fields below are all type: css, none
+# json_ld. Per-video studio/performer/tag links live in one scoped list,
+# `nav#video-tags-list-container`, as the first anchor (uploader — either
+# /channels/<studio> for studio content or /users/profiles/<user> for
+# amateur uploads, so the studio selector below simply comes up empty for
+# amateur videos) followed by /categories/ and /tags/ anchors for the
+# video's own genres/keywords, and (studio content only) /pornstars/
+# anchors for credited performers. A near-identical /categories/ link list
+# also appears in the *site's* global nav dropdown elsewhere on the page —
+# unrelated to this video — so selectors are deliberately scoped to
+# `#video-tags-list-container` to avoid picking those up.
+#
+# Known fragility: xHamster's own component classes are per-build hashed
+# (e.g. "container-c9dbd", "tag-96c3e" — these will rotate on the site's
+# next deploy), so selectors below intentionally avoid them in favor of
+# stable BEM-style classes (thumb-list__item, video-thumb-info__name),
+# data-role attributes, and href substring matches, which should survive a
+# CSS/JS rebuild. Cloudflare fronts the whole site; a plain fetch worked
+# during this research pass but xHamster is known to vary bot defenses by
+# requester IP/reputation, so a production fetch may still get challenged
+# and need a browser UA or session cookie some deployments won't have.
+# Live-fetch reality (verified against the real host): xHamster server-renders
+# a title for only ~7 of the ~51 result nodes — the rest carry a real href but
+# hydrate their title via JS, so a non-browser fetcher sees them as href-only.
+# The host's search filter drops a row only when BOTH title and webpage_url are
+# blank, so those ~44 title-less rows survive as sparse (URL-only) results.
+# This is inherent to xHamster's JS grid and can't be filtered in declarative
+# CSS (no "has non-empty title" selector); best-effort as flagged. A connector
+# (JSON API or headless browser) would be the upgrade path if fuller, titled
+# results are needed.
+name: xHamster
+version: "1.0.0"
+api_version: 1
+url_patterns:
+  - 'xhamster\.com/videos/'
+search:
+  url: "https://xhamster.com/search/{term}"
+  selector: "div.thumb-list__item.video-thumb"
+  limit: 24
+  fields:
+    title:       { selector: "a.video-thumb-info__name", attribute: title }
+    webpage_url: { selector: "a.video-thumb__image-container", attribute: href }
+    image:       { selector: "img.thumb-image-container__image", attribute: src }
+    duration:    { selector: "[data-role='video-duration']" }
+scene:
+  title:       { selector: "meta[property='og:title']", type: css, attribute: content }
+  description: { selector: "meta[name='description']", type: css, attribute: content }
+  image:       { selector: "meta[property='og:image']", type: css, attribute: content }
+  studio:      { selector: "#video-tags-list-container a[href*='/channels/']", type: css }
+  performers:  { selector: "#video-tags-list-container a[href*='/pornstars/']", type: css, multiple: true }
+  tags:        { selector: "#video-tags-list-container a[href*='/categories/'], #video-tags-list-container a[href*='/tags/']", type: css, multiple: true }

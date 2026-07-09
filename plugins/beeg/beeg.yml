@@ -1,0 +1,12 @@
+# Beeg (beeg.com) — free-text search (Identify panel) and web recommendations,
+# no API key required. Clean-room research against the live site (2026-07-09):
+# beeg.com is a client-rendered Vue SPA (curl on / and on a video/search path
+# returns only the empty app shell — no server-rendered listings, no JSON-LD),
+# backed by the "externulls.com" JSON API cluster (store.externulls.com for
+# reads, search.externulls.com for its search box). See beeg.rb for the
+# connector object and for why #search talks to a WebSocket, not a REST GET.
+name: Beeg
+key: beeg
+version: "1.0.0"
+api_version: 1
+connector: beeg.rb

@@ -1,0 +1,33 @@
+# Pornzog — free-text search (Identify panel) + scene enrichment, no API key
+# required. Clean-room: selectors derived 2026-07-09 from live curl fetches of
+# https://pornzog.com/search/babe/ (results grid) and a video page reached
+# from it (https://pornzog.com/video/27955339/.../), both fetched with a
+# desktop Chrome UA, no age-gate cookie needed. Plain server-rendered HTML —
+# no JS/API required — so this is the pure-YAML declarative form (no
+# connector .rb, no CI test).
+#
+# The video page carries no JSON-LD VideoObject block, only Open Graph meta
+# tags (og:title/og:image/og:video:release_date) plus a real h2.video-title
+# and models-list/tags-list anchors — scene fields below use those (type:
+# css) instead of json_ld.
+name: Pornzog
+version: "1.0.0"
+api_version: 1
+url_patterns:
+  - 'pornzog\.com/video/\d+/'
+search:
+  url: "https://pornzog.com/search/{term}/"
+  selector: "ul.thumbs-videos-list li"
+  limit: 12
+  fields:
+    title:       { selector: "a.title span" }
+    webpage_url: { selector: "a.title", attribute: href }
+    image:       { selector: "img.thumb", attribute: data-original }
+    duration:    { selector: "div.duration" }
+scene:
+  title:       { selector: "h2.video-title", type: css }
+  date:        { selector: "meta[property='og:video:release_date']", type: css, attribute: content, format: "%Y-%m-%dT%H:%M:%S%z" }
+  studio:      { selector: "p.date-added a", type: css }
+  performers:  { selector: "ul.models-list a", type: css, multiple: true }
+  tags:        { selector: "ul.tags-list a", type: css, multiple: true }
+  image:       { selector: "meta[property='og:image']", type: css, attribute: content }

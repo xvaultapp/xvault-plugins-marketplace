@@ -1,0 +1,30 @@
+# YouPorn — clean-room, derived 2026-07-09 from the site's own public HTML:
+#   - search results: curl of https://www.youporn.com/search/?query=teen
+#     (no age/consent cookie needed for a plain server-rendered fetch — the
+#     search results HTML comes back identical with or without one)
+#   - scene page: curl of https://www.youporn.com/watch/190764811/ and two
+#     more /watch/ pages (amateur, pornstar, channel/studio uploader types)
+#     to confirm which selectors are present across upload types.
+# Server-rendered search HTML, CSS-only selectors suffice -> declarative.
+name: YouPorn
+version: "1.0.0"
+api_version: 1
+url_patterns:
+  - 'youporn\.com/watch/\d+'
+search:
+  url: "https://www.youporn.com/search/?query={term}"
+  selector: "article.video-box"
+  limit: 12
+  fields:
+    title:       { selector: "a.video-title-text span" }
+    webpage_url: { selector: "a.video-title-text", attribute: href }
+    image:       { selector: "img.thumb-image", attribute: data-src }
+    duration:    { selector: ".video-duration span" }
+scene:
+  title:       { selector: "h1.videoTitle", type: css }
+  description: { selector: "meta[name='description']", type: css, attribute: content }
+  studio:      { selector: ".submitByLink a", type: css }
+  performers:  { selector: "#metaDataPornstarInfo a.metaDataPornstarLink", type: css, multiple: true }
+  tags:        { selector: ".video-tags-carousel a.tm_carousel_tag", type: css, multiple: true }
+  image:       { selector: thumbnailUrl, type: json_ld }
+  date:        { selector: uploadDate, type: json_ld, format: "%Y-%m-%dT%H:%M:%S%z" }

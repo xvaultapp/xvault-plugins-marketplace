@@ -1,0 +1,65 @@
+# NoodleMagazine — free-text search (Identify panel) + scene enrichment, no
+# API key required. Clean-room, but noodlemagazine.com sits behind a
+# Cloudflare managed JS challenge that blocks plain curl (and would equally
+# block XVault's own non-browser fetcher) — selectors below are derived from
+# the site's own real server-rendered HTML retrieved via the Wayback Machine
+# (web.archive.org), which mirrors the exact markup noodlemagazine.com itself
+# served: a search-results snapshot of
+# https://noodlemagazine.com/video/"clara trinnity" (2025-12-16 capture) and
+# a video page reached from it, https://noodlemagazine.com/watch/-100173928_456239089
+# (2026-02-24 capture). robots.txt confirms an "Api layer" but the only
+# public endpoint found (/api/autocomplete) is typeahead suggestion strings
+# only (no urls/thumbs/duration) — real search results are plain
+# server-rendered HTML at /video/{term}, hence the declarative (no connector)
+# form. Because of the Cloudflare gate this plugin may fail live scraping
+# until/unless XVault's fetcher can pass the challenge — see repo notes.
+#
+# VERIFIED 2026-07-09 against the live site via a real headless browser:
+#   - Every HTML page returns HTTP 403 `cf-mitigated: challenge` (the "Just a
+#     moment" JS interstitial) to any non-browser fetch. The host's Net::HTTP
+#     PageFetcher gets 403 and can NEVER pass it.
+#   - There is NO un-challenged JSON results API: once the browser solves the
+#     challenge, results arrive INSIDE the page HTML (no XHR to /api/*) — the
+#     only un-gated JSON endpoint is /api/autocomplete (suggestion strings).
+#   - The selectors below are CORRECT: against the real post-challenge HTML
+#     they match #list_videos + 24 a.item_link result rows. So this plugin
+#     works the moment the host can present valid Cloudflare clearance.
+#   Upgrade path (host-side, not this plugin): a JS/solver fetch capability
+#   (FlareSolverr or a render-JS scraping API), OR a cf_clearance cookie
+#   (IP+UA-bound, expires — fragile). Plain selenium usually can't beat a CF
+#   *managed* challenge (automation is detectable).
+#
+# The video page carries a real schema.org VideoObject JSON-LD block
+# (name/description/thumbnailUrl/uploadDate/duration) plus an
+# `h1`/`div.description` pair and a `meta[property='ya:ovs:upload_date']` tag
+# for the release date. No studio/performer credits are exposed anywhere on
+# the page (this is a VK-sourced amateur aggregator, not a studio tube), so
+# scene intentionally omits studio/performers/tags — generic JSON-LD
+# enrichment (image) covers the rest. Search-grid thumbs are lazy-loaded via
+# data-src (the src attribute is a shared blank placeholder gif); a few
+# above-the-fold thumbs skip lazyload and only carry a plain src, so a small
+# fraction of search results may come back with no image.
+name: NoodleMagazine
+version: "1.0.0"
+api_version: 1
+url_patterns:
+  - 'noodlemagazine\.com/watch/'
+# Cloudflare managed JS challenge (see header): tells the host to fetch every
+# page for this plugin through its JS/solver path (FlareSolverr) instead of a
+# plain HTTP GET. Hosts without a solver configured ignore this and fall back to
+# a plain fetch (which stays blocked) — backward-compatible, api_version stays 1.
+fetch: js
+search:
+  url: "https://noodlemagazine.com/video/{term}"
+  selector: "#list_videos .item"
+  limit: 12
+  fields:
+    title:       { selector: ".i_info .title" }
+    webpage_url: { selector: "a.item_link", attribute: href }
+    image:       { selector: ".i_img img", attribute: data-src }
+    duration:    { selector: ".m_time" }
+scene:
+  title:       { selector: "h1", type: css }
+  description: { selector: "div.description", type: css }
+  date:        { selector: "meta[property='ya:ovs:upload_date']", type: css, attribute: content, format: "%Y-%m-%d" }
+  image:       { selector: thumbnailUrl, type: json_ld }
