@@ -1,0 +1,46 @@
+{
+  "data": [
+    {
+      "id": "scene-uuid-0001",
+      "title": "Test Scene Title",
+      "description": "A scrubbed test description.",
+      "date": "2021-06-15",
+      "url": "https://teststudio.example/scene/1",
+      "duration": 1800,
+      "hashes": [
+        { "type": "PHASH", "hash": "abcdef0123456789", "duration": 1805 }
+      ],
+      "site": { "name": "Test Studio" },
+      "tags": [
+        { "id": 1, "name": "Tag One", "uuid": "t-uuid-1" },
+        { "id": 2, "name": "Tag Two", "uuid": "t-uuid-2" }
+      ],
+      "performers": [
+        {
+          "id": "site-perf-1",
+          "name": "Jane Credited",
+          "image": "https://cdn.example/site/jane.jpg",
+          "face": "https://thumb.example/site/jane.jpg",
+          "extra": { "birthday": null, "nationality": null },
+          "parent": {
+            "id": "perf-canonical-1",
+            "name": "Jane Canonical",
+            "image": "https://cdn.example/canonical/jane.jpg",
+            "face": "https://thumb.example/canonical/jane.jpg",
+            "extras": { "birthday": "1990-03-22", "nationality": "American" }
+          }
+        },
+        {
+          "id": "perf-noparent-2",
+          "name": "Kate Noparent",
+          "image": "https://cdn.example/kate.jpg",
+          "face": "https://thumb.example/kate.jpg",
+          "extra": { "birthday": "1988-11-02", "nationality": "Canadian" },
+          "parent": null
+        }
+      ]
+    }
+  ],
+  "links": {},
+  "meta": { "total": 1 }
+}

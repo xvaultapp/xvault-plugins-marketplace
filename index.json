@@ -2,13 +2,19 @@
   "plugins": [
     {
       "name": "Example Tube",
-      "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/example-tube.yml",
+      "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/example-tube/example-tube.yml",
       "description": "Template plugin — search + scene scrape for a placeholder site. Copy it to author your own."
     },
     {
       "name": "Eporner",
-      "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/eporner.yml",
+      "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/eporner/eporner.yml",
       "description": "Free-text search and web recommendations from eporner.com. No API key required.",
+      "version": "1.0.0"
+    },
+    {
+      "name": "ThePornDB",
+      "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/tpdb/tpdb.yml",
+      "description": "PHASH/URL scene fingerprint resolver, performer metadata, and free-text search from theporndb.net. Needs an API key.",
       "version": "1.0.0"
     }
   ]

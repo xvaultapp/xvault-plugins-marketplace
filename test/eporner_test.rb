@@ -39,7 +39,7 @@ module Metadata
   end
 end
 
-PLUGIN_PATH = File.expand_path("../plugins/eporner.rb", __dir__)
+PLUGIN_PATH = File.expand_path("../plugins/eporner/eporner.rb", __dir__)
 EPORNER = Object.new.instance_eval(File.read(PLUGIN_PATH), PLUGIN_PATH)
 
 class EpornerTest < Minitest::Test

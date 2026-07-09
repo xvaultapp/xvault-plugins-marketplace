@@ -20,7 +20,7 @@ OPTIONAL_ARITY = {
 }.freeze
 
 class SmokeTest < Minitest::Test
-  Dir.glob(File.join(ROOT, "plugins", "*.yml")).sort.each do |yml_path|
+  Dir.glob(File.join(ROOT, "plugins", "*", "*.yml")).sort.each do |yml_path|
     config = YAML.safe_load_file(yml_path) || {}
     next if config["connector"].to_s.empty?
 

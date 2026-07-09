@@ -1,0 +1,12 @@
+# ThePornDB — PHASH/URL scene fingerprint resolver, performer metadata, and
+# free-text search (Identify panel), needs an API key. Ported from XVault core
+# (#40 plugin extraction); see tpdb.rb for the connector object. `key: tpdb`
+# re-matches this install's existing Connector row from before the
+# extraction, if any; `credential_key: tpdb` does the same for the saved
+# PluginCredential.
+name: ThePornDB
+key: tpdb
+credential_key: tpdb
+version: "1.0.0"
+api_version: 1
+connector: tpdb.rb
