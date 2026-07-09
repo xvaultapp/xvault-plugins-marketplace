@@ -1,0 +1,9 @@
+# Eporner — free-text search (Identify panel) and web recommendations, no API
+# key required. Ported from XVault core (#40 plugin extraction); see
+# eporner.rb for the connector object. `key: eporner` re-matches this
+# install's existing Connector row from before the extraction, if any.
+name: Eporner
+key: eporner
+version: "1.0.0"
+api_version: 1
+connector: eporner.rb
