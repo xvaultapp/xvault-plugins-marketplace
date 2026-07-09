@@ -11,6 +11,12 @@
       "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/tpdb/tpdb.yml",
       "description": "PHASH/URL scene fingerprint resolver, performer metadata, and free-text search from theporndb.net. Needs an API key.",
       "version": "1.0.0"
+    },
+    {
+      "name": "StashDB",
+      "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/stashdb/stashdb.yml",
+      "description": "OSHASH/PHASH scene fingerprint resolver, performer metadata, and free-text search from stashdb.org (stash-box). Needs an API key.",
+      "version": "1.0.0"
     }
   ]
 }

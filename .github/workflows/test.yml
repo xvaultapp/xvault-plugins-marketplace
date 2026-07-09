@@ -11,3 +11,4 @@ jobs:
       - run: ruby test/smoke_test.rb
       - run: ruby test/eporner_test.rb
       - run: ruby test/tpdb_test.rb
+      - run: ruby test/stashdb_test.rb

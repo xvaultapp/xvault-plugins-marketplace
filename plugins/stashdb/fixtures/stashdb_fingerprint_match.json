@@ -1,0 +1,41 @@
+{
+  "data": {
+    "findScenesBySceneFingerprints": [
+      [
+        {
+          "id": "scene-uuid-0001",
+          "title": "Test Scene Title",
+          "details": "A scrubbed test description.",
+          "release_date": "2021-06-15",
+          "duration": 1800,
+          "urls": [ { "url": "https://teststudio.example/scene/1" } ],
+          "studio": { "name": "Test Studio" },
+          "tags": [ { "name": "Tag One" }, { "name": "Tag Two" } ],
+          "images": [ { "url": "https://cdn.stashdb.org/scene/1/cover.jpg" } ],
+          "performers": [
+            { "as": "Jane Alias", "performer": { "id": "perf-canonical-1", "name": "Jane Canonical" } },
+            { "as": null, "performer": { "id": "perf-noparent-2", "name": "Kate Noparent" } }
+          ],
+          "fingerprints": [
+            { "hash": "abcdef0123456789", "algorithm": "PHASH", "duration": 1802 }
+          ]
+        },
+        {
+          "id": "scene-uuid-decoy",
+          "title": "Decoy Scene",
+          "details": "Should never be picked over the real match.",
+          "release_date": "2019-01-01",
+          "duration": 900,
+          "urls": [ { "url": "https://teststudio.example/scene/2" } ],
+          "studio": { "name": "Other Studio" },
+          "tags": [],
+          "images": [],
+          "performers": [],
+          "fingerprints": [
+            { "hash": "zz9900000000zzzz", "algorithm": "PHASH", "duration": 900 }
+          ]
+        }
+      ]
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+# StashDB — OSHASH/PHASH scene fingerprint resolver, performer metadata, and
+# free-text search (Identify panel) against the stashdb.org GraphQL API, needs
+# an API key. `key: stashdb` / `credential_key: stashdb` both resolve to this
+# install's saved PluginCredential (Settings → Plugins) — get an ApiKey from
+# your stashdb.org account (Profile → Settings → API key) and paste it there;
+# see stashdb.rb for the connector object.
+name: StashDB
+key: stashdb
+credential_key: stashdb
+version: "1.0.0"
+api_version: 1
+connector: stashdb.rb
