@@ -22,49 +22,49 @@
       "name": "XVideos",
       "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/xvideos/xvideos.yml",
       "description": "Free-text search and scene enrichment from xvideos.com. No API key required.",
-      "version": "1.0.1"
+      "version": "1.0.2"
     },
     {
       "name": "Pornzog",
       "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/pornzog/pornzog.yml",
       "description": "Free-text search and scene enrichment from pornzog.com. No API key required.",
-      "version": "1.0.1"
+      "version": "1.0.2"
     },
     {
       "name": "YouPorn",
       "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/youporn/youporn.yml",
       "description": "Free-text search and scene enrichment from youporn.com. No API key required.",
-      "version": "1.0.1"
+      "version": "1.0.2"
     },
     {
       "name": "PornHub",
       "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/pornhub/pornhub.yml",
       "description": "Free-text search and scene enrichment from pornhub.com. No API key required. May need a browser UA or age-consent cookie on some deployments.",
-      "version": "1.0.1"
+      "version": "1.0.2"
     },
     {
       "name": "NoodleMagazine",
       "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/noodlemagazine/noodlemagazine.yml",
       "description": "Free-text search and scene enrichment from noodlemagazine.com. No API key required. Cloudflare-gated: live scraping needs a fetcher that can pass the JS challenge.",
-      "version": "1.0.1"
+      "version": "1.0.2"
     },
     {
       "name": "xHamster",
       "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/xhamster/xhamster.yml",
       "description": "Free-text search and scene enrichment from xhamster.com. No API key required. Cloudflare-fronted; may need a browser UA on some deployments.",
-      "version": "1.0.1"
+      "version": "1.0.2"
     },
     {
       "name": "Beeg",
       "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/beeg/beeg.yml",
       "description": "Free-text search and web recommendations from beeg.com. No API key required.",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "name": "MissAV",
       "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/missav/missav.yml",
       "description": "Free-text search and scene enrichment for JAV titles from missav.ws. No API key required. Cloudflare-gated: needs a host fetcher that can pass the JS challenge (fetch: js).",
-      "version": "1.0.1"
+      "version": "1.0.2"
     }
   ]
 }

@@ -7,6 +7,6 @@
 # connector object and for why #search talks to a WebSocket, not a REST GET.
 name: Beeg
 key: beeg
-version: "1.0.0"
+version: "1.0.1"
 api_version: 1
 connector: beeg.rb

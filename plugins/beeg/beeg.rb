@@ -157,7 +157,7 @@ class Beeg
         provider: "beeg",
         title: title.presence || "Untitled",
         webpage_url: "https://#{HOST}/-0#{file["id"]}",
-        embed_url: nil,
+        embed_url: "https://#{HOST}/embed/#{file["id"]}",
         thumbnail_url: "#{THUMBS}/videos/#{file["id"]}/0.webp?size=320x180",
         duration: file["fl_duration"]
       }

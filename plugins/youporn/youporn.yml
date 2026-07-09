@@ -7,7 +7,7 @@
 #     to confirm which selectors are present across upload types.
 # Server-rendered search HTML, CSS-only selectors suffice -> declarative.
 name: YouPorn
-version: "1.0.1"
+version: "1.0.2"
 api_version: 1
 url_patterns:
   - 'youporn\.com/watch/\d+'
@@ -20,6 +20,9 @@ search:
     webpage_url: { selector: "a.video-title-text", attribute: href }
     cover_url:   { selector: "img.thumb-image", attribute: data-src }
     duration:    { selector: ".video-duration span" }
+  embed:
+    template: "https://www.youporn.com/embed/{id}"
+    id_pattern: '/watch/(\d+)'
 scene:
   title:       { selector: "h1.videoTitle", type: css }
   description: { selector: "meta[name='description']", type: css, attribute: content }

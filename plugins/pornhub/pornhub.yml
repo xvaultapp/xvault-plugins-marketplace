@@ -20,7 +20,7 @@
 # defenses by requester IP/geo/reputation; this plugin may need a browser UA
 # or age-consent cookie in some deployments even though none was needed here.
 name: PornHub
-version: "1.0.1"
+version: "1.0.2"
 api_version: 1
 url_patterns:
   - 'pornhub\.com/view_video\.php\?viewkey='
@@ -33,6 +33,9 @@ search:
     webpage_url: { selector: "span.title a", attribute: href }
     cover_url:   { selector: "div.phimage img", attribute: src }
     duration:    { selector: "var.duration" }
+  embed:
+    template: "https://www.pornhub.com/embed/{id}"
+    id_pattern: 'viewkey=([A-Za-z0-9]+)'
 scene:
   # og:title, not json_ld `name`: PornHub HTML-encodes the JSON-LD name
   # ("Black &amp; white ... &excl;"), while og:title is already decoded

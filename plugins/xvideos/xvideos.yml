@@ -12,7 +12,7 @@
 # Thumbs in the search grid are lazy-loaded via data-src (the src attribute
 # is a shared blank placeholder gif).
 name: XVideos
-version: "1.0.1"
+version: "1.0.2"
 api_version: 1
 url_patterns:
   - 'xvideos\.com/video\.'
@@ -28,6 +28,9 @@ search:
     # parse_duration only accepts MM:SS/H:MM:SS — so the field would always
     # come back nil (verified live against the real host). Omitted rather
     # than shipped as a silent no-op.
+  embed:
+    template: "https://www.xvideos.com/embedframe/{id}"
+    id_pattern: 'video\.([A-Za-z0-9]+)'
 scene:
   title:       { selector: "meta[property='og:title']", type: css, attribute: content }
   description: { selector: description, type: json_ld }
