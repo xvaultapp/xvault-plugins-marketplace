@@ -59,6 +59,12 @@
       "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/beeg/beeg.yml",
       "description": "Free-text search and web recommendations from beeg.com. No API key required.",
       "version": "1.0.0"
+    },
+    {
+      "name": "MissAV",
+      "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/missav/missav.yml",
+      "description": "Free-text search and scene enrichment for JAV titles from missav.ws. No API key required. Cloudflare-gated: needs a host fetcher that can pass the JS challenge (fetch: js).",
+      "version": "1.0.0"
     }
   ]
 }

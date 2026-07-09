@@ -1,0 +1,59 @@
+# MissAV — free-text search (Identify panel) + scene enrichment for JAV titles,
+# no API key required. Clean-room: selectors derived 2026-07-09 from the site's
+# own live HTML, retrieved through a real headless browser (FlareSolverr) because
+# missav.ws sits behind a Cloudflare *managed JS challenge* — every plain
+# non-browser fetch returns HTTP 403 `cf-mitigated: challenge`. Source pages:
+# a search-results page (https://missav.ws/en/search/uncensored, 12 result cards)
+# and a video page reached from it (https://missav.ws/en/ienf-451-uncensored-leak),
+# used to confirm the scene selectors.
+#
+# Because of the Cloudflare gate this plugin sets `fetch: js`, which tells the
+# XVault host to fetch its pages through the opt-in JS/solver path (FlareSolverr,
+# set FLARESOLVERR_URL). On a host WITHOUT a solver configured, `fetch: js` is
+# ignored and requests fall back to a plain fetch — which stays 403-blocked, so
+# this plugin only works where the host can pass the challenge. VERIFIED
+# end-to-end 2026-07-09 through the real host with FlareSolverr: 12 search
+# results (title/url/cover/duration) + full scene enrichment.
+#
+# The video page carries NO schema.org JSON-LD, so scene fields are all CSS:
+# og:title / og:image meta tags plus the single info panel (`div.space-y-2`,
+# unique on the page) whose rows expose Release date (<time>), Actress, Genre and
+# Maker as scoped links. Scoping every field to `div.space-y-2` deliberately
+# excludes the sidebar/nav "Actress list / ranking / collection" and global genre
+# links that would otherwise leak in. Studio maps to the JAV Maker; performers to
+# Actress; tags to Genre. There is no on-page synopsis (og:description is empty),
+# so description is intentionally omitted.
+#
+# Known fragility: missav's markup is Tailwind utility classes (e.g. `thumbnail`,
+# `text-secondary`, `bottom-1 right-1`, `space-y-2`) and Alpine.js (x-data) — a
+# site rebuild can rotate these. Selectors favor the most stable ones and href
+# substring matches (`/actresses/`, `/genres/`, `/makers/`), but treat this as
+# best-effort. Search covers the first results page only (limit 12).
+name: MissAV
+version: "1.0.0"
+api_version: 1
+# Cloudflare managed JS challenge: fetch every page through the host's JS/solver
+# path (FlareSolverr) instead of a plain GET. Hosts without a solver ignore this
+# and fall back to a plain (403-blocked) fetch — backward-compatible.
+fetch: js
+url_patterns:
+  # Bare-slug video pages (JAV codes always contain a hyphen), with optional
+  # dm<n>/ CDN-shard and 2-letter language prefixes; anchored so listing pages
+  # (/search/…, /genres/…, /actresses/…) can't match.
+  - 'missav\.ws/(dm\d+/)?([a-z]{2}/)?[a-z0-9]+-[a-z0-9-]+/?\z'
+search:
+  url: "https://missav.ws/en/search/{term}"
+  selector: "div.thumbnail"
+  limit: 12
+  fields:
+    title:       { selector: "a.text-secondary" }
+    webpage_url: { selector: "a.text-secondary", attribute: href }
+    image:       { selector: "img", attribute: data-src }
+    duration:    { selector: "span.bottom-1.right-1" }   # H:MM:SS, e.g. "1:56:23"
+scene:
+  title:      { selector: "meta[property='og:title']", type: css, attribute: content }
+  image:      { selector: "meta[property='og:image']", type: css, attribute: content }
+  date:       { selector: "div.space-y-2 time", type: css, format: "%Y-%m-%d" }
+  studio:     { selector: "div.space-y-2 a[href*='/makers/']", type: css }
+  performers: { selector: "div.space-y-2 a[href*='/actresses/']", type: css, multiple: true }
+  tags:       { selector: "div.space-y-2 a[href*='/genres/']", type: css, multiple: true }
