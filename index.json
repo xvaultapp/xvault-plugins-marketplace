@@ -1,0 +1,9 @@
+{
+  "plugins": [
+    {
+      "name": "Example Tube",
+      "url": "https://raw.githubusercontent.com/xvaultapp/xvault-plugins-marketplace/main/plugins/example-tube.yml",
+      "description": "Template plugin — search + scene scrape for a placeholder site. Copy it to author your own."
+    }
+  ]
+}
